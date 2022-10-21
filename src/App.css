@@ -1,10 +1,3 @@
-/* .site-layout-content {
-  height: 100%;
-  min-height: 280px;
-  padding: 24px;
-  background: #fff;
-} */
-
 .logo {
   float: left;
   width: 120px;
@@ -15,4 +8,28 @@
 .ant-row-rtl .logo {
   float: right;
   margin: 16px 0 16px 24px;
+}
+
+
+
+.editable-cell {
+  position: relative;
+  height: fit-content;
+}
+
+.editable-cell-value-wrap {
+  padding: 5px 12px;
+  cursor: pointer;
+}
+
+.editable-row:hover .editable-cell-value-wrap {
+  background-color: #969da11e;
+  /* padding: 4px 11px; */
+  /* border: 1px solid #d9d9d941;
+  border-radius: 2px; */
+  transition: background-color 0.5s;
+}
+
+[data-theme='dark'] .editable-row:hover .editable-cell-value-wrap {
+  border: 1px solid #434343;
 }

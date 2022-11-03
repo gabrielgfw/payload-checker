@@ -5,16 +5,25 @@
   margin: 16px 24px 16px 0;
   background: rgba(255, 255, 255, 0.3);
 }
+
 .ant-row-rtl .logo {
   float: right;
   margin: 16px 0 16px 24px;
 }
 
+.not-required-row {
+  background-color: rgba(247, 122, 122, 0.3);
+}
 
+.not-required-row:hover {
+  background-color: rgba(253, 158, 158, 0.3);
+}
 
 .editable-cell {
-  position: relative;
-  height: fit-content;
+  z-index: 5;
+  cursor: pointer;
+  margin-left: 2px !important;
+  margin-top: 5px !important;
 }
 
 .editable-cell-value-wrap {

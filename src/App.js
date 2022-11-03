@@ -13,116 +13,90 @@ const headerItems = [{
   label: 'Principal'
 }];
 
-
-const EditableContext = React.createContext(null);
-const EditableRow = ({ index, ...props }) => {
-  const [form] = Form.useForm();
-  return (
-    <Form form={form} component={false}>
-      <EditableContext.Provider value={form}>
-        <tr {...props} />
-      </EditableContext.Provider>
-    </Form>
-  );
-};
-
-const EditableCell = ({
-  title,
-  editable,
-  children,
-  dataIndex,
-  record,
-  handleSave,
-  ...restProps
-}) => {
-  const [editing, setEditing] = useState(false);
-  const inputRef = useRef(null);
-  const form = useContext(EditableContext);
-  useEffect(() => {
-    if (editing) {
-      inputRef.current.focus();
-    }
-  }, [editing]);
-  const toggleEdit = () => {
-    setEditing(!editing);
-    form.setFieldsValue({
-      [dataIndex]: record[dataIndex],
-    });
-  };
-  const save = async () => {
-    try {
-      const values = await form.validateFields();
-      toggleEdit();
-      handleSave({
-        ...record,
-        ...values,
-      });
-    } catch (errInfo) {
-      console.log('Save failed:', errInfo);
-    }
-  };
-  let childNode = children;
-  if (editable) {
-    childNode = editing ? (
-      <Form.Item
-        style={{
-          margin: 0,
-        }}
-        name={dataIndex}
-      >
-        <Input ref={inputRef} onPressEnter={save} onBlur={save} />
-      </Form.Item>
-    ) : (
-      <div
-        className="editable-cell-value-wrap"
-        style={{
-          paddingRight: 24,
-        }}
-        onClick={toggleEdit}
-      >
-        {children}
-      </div>
-    );
-  }
-  return <td {...restProps}>{childNode}</td>;
-};
-
-
-
 function App() {
   const [propList, setPropList] = useState([{
     key: 0,
     propertyName: 'rateios',
     type: 'array',
-    description: '',
-    required: false,
+    description: 'teste descrição',
+    required: true,
     validated: false
   }]);
+
+  const [editingRow, setEditingRow] = useState(null);
+  const [form] = Form.useForm();
 
   const defaultColumns = [
     {
       title: 'Campo',
       dataIndex: 'propertyName',
       key: 'propertyName',
-      editable: true
+      render: (text, record) => {
+        if (editingRow === record.key) {
+          return (
+            <Form.Item
+              name="propertyName"
+            >
+              <Input className={"editable-cell"} />
+            </Form.Item>
+          );
+        } else {
+          return text
+        }
+      }
     },
     {
       title: 'Tipo',
       dataIndex: 'type',
       key: 'type',
-      editable: true
+      render: (text, record) => {
+        if (editingRow === record.key) {
+          return (
+            <Form.Item
+              name="type"
+            >
+              <Input className="editable-cell" />
+            </Form.Item>
+          );
+        } else {
+          return text
+        }
+      }
     },
     {
       title: 'Descrição',
       dataIndex: 'description',
       key: 'description',
-      editable: true
+      render: (text, record) => {
+        if (editingRow === record.key) {
+          return (
+            <Form.Item
+              name="description"
+            >
+              <Input className="editable-cell" />
+            </Form.Item>
+          );
+        } else {
+          return text
+        }
+      }
     },
     {
       title: 'Obrigatório',
       dataIndex: 'required',
       key: 'required',
-      editable: true
+      render: (_, record) => {
+        return (
+          <Form.Item
+            name="required"
+          >
+            <Switch defaultChecked onChange={(checked => {
+              changeRequiredRow(record.key, checked);
+              form.setFieldValue("required", checked);
+            })} />
+          </Form.Item>
+        )
+      }
     },
     {
       title: 'Regra de Preenchimento',
@@ -131,29 +105,68 @@ function App() {
       editable: true
     },
     {
-      title: 'Validado',
+      title: 'Ações',
       dataIndex: 'validated',
       key: 'validated',
-      switchable: true,
-      render: (value) => <Switch onChange={console.log(value)}></Switch>
+      render: (_, record) => {
+        return (
+          <>
+            <Button type="link" onClick={() => {
+              setEditingRow(record.key);
+              form.setFieldsValue({
+                propertyName: record.propertyName,
+                type: record.type,
+                description: record.description,
+                required: record.required
+              })
+            }}>Edit</Button>
+            <Button type="link" htmlType="submit">Save</Button>
+          </>
+        );
+      }
     }
   ];
 
+  function saveRowChanges(values) {
+    let selectedRowInformation = propList.find(pos => pos.key === editingRow);
+    let collapsedObjects = { ...selectedRowInformation, ...values };
+    let indexPosition = propList.findIndex(pos => pos.key === editingRow);
+    let allPropList = [...propList];
+    allPropList[indexPosition] = collapsedObjects;
+    setPropList(allPropList);
+    setEditingRow(null);
+  }
 
-  function onFinish(values) {
+  function changeRequiredRow(rowKey, boolean) {
+    let selectedRowInformation = propList.find(pos => pos.key === rowKey);
+    selectedRowInformation.required = boolean;
+    let indexPosition = propList.findIndex(pos => pos.key === editingRow);
+    let allPropList = [...propList];
+    allPropList[indexPosition] = selectedRowInformation;
+    setPropList(allPropList);
+  }
+
+  function handlerRowBackground(rowProperties) {
+    if (rowProperties.required) {
+      return ''
+    } else {
+      return 'not-required-row'
+    }
+  }
+
+  function startExamination(values) {
     const { payloadInput } = values;
     const payloadParsed = JSON.parse(payloadInput);
     reduceArraysForSimplicity(payloadParsed);
     const examined = examinePayload(payloadParsed, []);
-    setPropList([ ...examined ]);
+    setPropList([...examined]);
   }
 
-
   function reduceArraysForSimplicity(payloadParsed) {
-    for(let prop in payloadParsed) {
+    for (let prop in payloadParsed) {
       const propType = returnPropertyType(payloadParsed[prop]);
-      if(propType === 'array') {
-        if(payloadParsed[prop].length > 0) {
+      if (propType === 'array') {
+        if (payloadParsed[prop].length > 0) {
           payloadParsed[prop] = payloadParsed[prop].slice(0, 1);
         }
       }
@@ -163,16 +176,16 @@ function App() {
   function examinePayload(payloadParsed, propertiesStack) {
     let properties = propertiesStack;
 
-    for(let prop in payloadParsed) {
+    for (let prop in payloadParsed) {
       const propType = returnPropertyType(payloadParsed[prop]);
       const propZerada = prop == 0;
 
-      if(propType === 'object' || propType === 'array') {
+      if (propType === 'object' || propType === 'array') {
         properties.push({
           propertyName: propZerada ? '-- início --' : `${prop} (INÍCIO)`,
           type: propType,
           description: '',
-          required: false,
+          required: true,
           fillRule: '',
           validated: false
         });
@@ -182,7 +195,7 @@ function App() {
           propertyName: propZerada ? '-- fim --' : `${prop} (FIM)`,
           type: propType,
           description: '',
-          required: false,
+          required: true,
           fillRule: '',
           validated: false
         });
@@ -192,7 +205,7 @@ function App() {
           propertyName: prop,
           type: propType,
           description: '',
-          required: false,
+          required: true,
           fillRule: '',
           validated: false
         });
@@ -204,86 +217,40 @@ function App() {
 
   function applyIndexValue(propertiesList) {
     return propertiesList.map((prop, index) => {
-      return { key: index+1, ...prop };
+      return { key: index + 1, ...prop };
     });
   }
 
   function returnPropertyType(prop) {
-    if(Array.isArray(prop)) return 'array';
-    return typeof(prop);
+    if (Array.isArray(prop)) return 'array';
+    return typeof (prop);
   }
 
-  const components = {
-    body: {
-      row: EditableRow,
-      cell: EditableCell,
-    },
-  };
-
-  const columns = defaultColumns.map((col) => {
-    if(col.editable) {
-      return {
-        ...col,
-        onCell: (record) => ({
-          record,
-          editable: col.editable,
-          dataIndex: col.dataIndex,
-          title: col.title,
-          handleSave,
-        }),
-      }
-
-    } else if(col.switchable) {
-      return {
-        ...col,
-        onCell: (record, rowIndex) => ({
-          record,
-          switchable: col.switchable,
-          dataIndex: col.dataIndex,
-          title: col.title,
-          handleSave,
-        }),
-      }
-    } else {
-      return col;
-    }
-  });
-
-  const handleSave = (row) => {
-    const newData = [...propList];
-    const index = newData.findIndex((item) => row.key === item.key);
-    const item = newData[index];
-    newData.splice(index, 1, {
-      ...item,
-      ...row,
-    });
-    setPropList(newData);
-  };
 
   return (
     <>
-      <Layout style={{ height: '100vh'}}>
+      <Layout style={{ height: '100vh' }}>
         <Header>
-          <div className="logo"/>
+          <div className="logo" />
           <Menu
             theme="dark"
             mode="horizontal"
-            items={ headerItems }
+            items={headerItems}
           />
         </Header>
         <Content style={{ padding: '50px', height: '100%' }}>
           <div className="site-layout-content">
             <Form
               name="payloadTeste"
-              onFinish={onFinish}
+              onFinish={startExamination}
             >
               <Form.Item name="payloadInput">
-                <TextArea rows={4} placeholder="Cole um payload de exemplo"/>
+                <TextArea rows={4} placeholder="Cole um payload de exemplo" />
               </Form.Item>
-              
+
               <Form.Item>
-                <Button 
-                  style={{ marginTop: '10px'}} 
+                <Button
+                  style={{ marginTop: '10px' }}
                   type="primary"
                   htmlType="submit"
                 >
@@ -291,18 +258,22 @@ function App() {
                 </Button>
               </Form.Item>
             </Form>
-            <Table 
-              components={components}
-              dataSource={propList} 
-              columns={columns} 
-              sticky={true} 
-              pagination={false} 
-              scroll={{ y: '50vh'}} 
-              bordered={true}
-              size={'small'}
-              rowClassName={() => 'editable-row'}
-              onChange={console.log(propList)}
-            />
+            <Form form={form} onFinish={saveRowChanges}>
+              <Table
+                rowClassName={(record, index) => {
+                  console.log(record);
+                  return handlerRowBackground(record)
+                }}
+                dataSource={propList}
+                columns={defaultColumns}
+                sticky={true}
+                pagination={false}
+                scroll={{ y: '50vh' }}
+                bordered={false}
+                size={'small'}
+              />
+            </Form>
+            <code>{JSON.stringify(propList)}</code><br />
           </div>
         </Content>
         <Footer style={{ textAlign: 'center' }}>Gabriel Felipe Werner - 2022</Footer>

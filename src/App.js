@@ -1,6 +1,6 @@
-import React, { useContext, useEffect, useRef, useState } from 'react';
-import { Layout, Input, Menu, Button, Form, Table, Steps, Checkbox, Switch } from 'antd';
-import { CheckOutlined, CloseOutlined } from '@ant-design/icons';
+import React, { useState } from 'react';
+import { Layout, Input, Menu, Button, Form, Table, Steps, message, Switch } from 'antd';
+import { ProfileOutlined } from '@ant-design/icons';
 import './App.css';
 
 
@@ -16,9 +16,10 @@ const headerItems = [{
 function App() {
   const [propList, setPropList] = useState([{
     key: 0,
-    propertyName: 'rateios',
-    type: 'array',
-    description: 'teste descrição',
+    propertyName: 'nomeColaborador',
+    type: 'string',
+    description: 'Nome do colaborador',
+    fillRule: 'Enviar código de integração do colaborador',
     required: true,
     validated: false
   }]);
@@ -82,6 +83,24 @@ function App() {
       }
     },
     {
+      title: 'Regra de Preenchimento',
+      dataIndex: 'fillRule',
+      key: 'fillRule',
+      render: (text, record) => {
+        if (editingRow === record.key) {
+          return (
+            <Form.Item
+              name="fillRule"
+            >
+              <Input className="editable-cell" />
+            </Form.Item>
+          );
+        } else {
+          return text
+        }
+      }
+    },
+    {
       title: 'Obrigatório',
       dataIndex: 'required',
       key: 'required',
@@ -90,19 +109,13 @@ function App() {
           <Form.Item
             name="required"
           >
-            <Switch defaultChecked onChange={(checked => {
+            <Switch style={{marginTop: '20px'}} defaultChecked onChange={(checked => {
               changeRequiredRow(record.key, checked);
               form.setFieldValue("required", checked);
             })} />
           </Form.Item>
         )
       }
-    },
-    {
-      title: 'Regra de Preenchimento',
-      dataIndex: 'fillRule',
-      key: 'fillRule',
-      editable: true
     },
     {
       title: 'Ações',
@@ -117,10 +130,11 @@ function App() {
                 propertyName: record.propertyName,
                 type: record.type,
                 description: record.description,
+                fillRule: record.fillRule,
                 required: record.required
               })
-            }}>Edit</Button>
-            <Button type="link" htmlType="submit">Save</Button>
+            }}>Editar</Button>
+            <Button type="link" htmlType="submit">Salvar</Button>
           </>
         );
       }
@@ -156,10 +170,27 @@ function App() {
 
   function startExamination(values) {
     const { payloadInput } = values;
-    const payloadParsed = JSON.parse(payloadInput);
-    reduceArraysForSimplicity(payloadParsed);
-    const examined = examinePayload(payloadParsed, []);
-    setPropList([...examined]);
+    try {
+      const payloadParsed = parseInput(payloadInput);
+      reduceArraysForSimplicity(payloadParsed);
+      const examined = examinePayload(payloadParsed, []);
+      setPropList([...examined]);
+      feedbackMessage(true, 'Payload examinado com sucesso');
+    } catch(error) {
+      feedbackMessage(false, error);
+    }
+  }
+
+  function feedbackMessage(success, text) {
+    success ? message.success(text) : message.error(text)
+  }
+
+  function parseInput(payloadInput) {
+    try {
+      return JSON.parse(payloadInput);
+    } catch(error) {
+      throw 'Payload informado é inválido';
+    }
   }
 
   function reduceArraysForSimplicity(payloadParsed) {
@@ -222,6 +253,7 @@ function App() {
   }
 
   function returnPropertyType(prop) {
+    if (!prop) return 'null';
     if (Array.isArray(prop)) return 'array';
     return typeof (prop);
   }
@@ -238,8 +270,14 @@ function App() {
             items={headerItems}
           />
         </Header>
-        <Content style={{ padding: '50px', height: '100%' }}>
-          <div className="site-layout-content">
+        <Content style={{ padding: '30px', height: '100%' }}>
+          <div style={{ height: '100%' }}>
+
+            <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', padding: '10px' }}>
+              <ProfileOutlined style={{ padding: '5px', fontSize: '24px' }}/>
+              <h1 style={{ paddingTop: '8px'}}>Payload para examinar</h1>
+            </div>
+
             <Form
               name="payloadTeste"
               onFinish={startExamination}
@@ -273,7 +311,7 @@ function App() {
                 size={'small'}
               />
             </Form>
-            <code>{JSON.stringify(propList)}</code><br />
+            <code style={{ marginTop: '40px' }}>{JSON.stringify(propList)}</code><br />
           </div>
         </Content>
         <Footer style={{ textAlign: 'center' }}>Gabriel Felipe Werner - 2022</Footer>

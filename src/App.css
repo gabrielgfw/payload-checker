@@ -11,6 +11,7 @@
   margin: 16px 0 16px 24px;
 }
 
+
 .not-required-row {
   background-color: rgba(247, 122, 122, 0.3);
 }
@@ -23,7 +24,7 @@
   z-index: 5;
   cursor: pointer;
   margin-left: 2px !important;
-  margin-top: 5px !important;
+  margin-top: 15px !important;
 }
 
 .editable-cell-value-wrap {
@@ -33,9 +34,6 @@
 
 .editable-row:hover .editable-cell-value-wrap {
   background-color: #969da11e;
-  /* padding: 4px 11px; */
-  /* border: 1px solid #d9d9d941;
-  border-radius: 2px; */
   transition: background-color 0.5s;
 }
 

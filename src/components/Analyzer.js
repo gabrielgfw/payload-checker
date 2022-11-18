@@ -167,8 +167,8 @@ function Analyzer() {
     const { payloadInput } = values;
     try {
       const payloadParsed = parseInput(payloadInput);
-      reduceArraysForSimplicity(payloadParsed);
-      const examined = examinePayload(payloadParsed, []);
+      const payloadSimplified = reduceArraysForSimplicity(payloadParsed);
+      const examined = examinePayload(payloadSimplified, []);
       setPropList([...examined]);
       feedbackMessage(true, 'Payload examinado com sucesso');
     } catch (error) {
@@ -189,14 +189,24 @@ function Analyzer() {
   }
 
   function reduceArraysForSimplicity(payloadParsed) {
-    for (let prop in payloadParsed) {
-      const propType = returnPropertyType(payloadParsed[prop]);
+    let overallArrayClean = Array.isArray(payloadParsed) ? payloadParsed.slice(0, 1) : payloadParsed;
+
+    console.log(`# Raw payload values:`);
+    console.log(payloadParsed);
+
+    console.log(`# Overall:`);
+    console.log(overallArrayClean);
+
+    for (let prop in overallArrayClean) {
+      const propType = returnPropertyType(overallArrayClean[prop]);
       if (propType === 'array') {
-        if (payloadParsed[prop].length > 0) {
-          payloadParsed[prop] = payloadParsed[prop].slice(0, 1);
+        if (overallArrayClean[prop].length > 0) {
+          overallArrayClean[prop] = overallArrayClean[prop].slice(0, 1);
         }
       }
     }
+
+    return overallArrayClean;
   }
 
   function examinePayload(payloadParsed, propertiesStack) {

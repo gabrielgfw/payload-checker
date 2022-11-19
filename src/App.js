@@ -35,7 +35,11 @@ function App() {
             <Analyzer />
           </div>
         </Content>
-        <Footer style={{ textAlign: 'center', marginTop: 'auto', backgroundColor: '#001529', height: '20px', color: 'white' }}>Gabriel Felipe Werner - 2022</Footer>
+        <Footer style={{ textAlign: 'center', marginTop: 'auto', backgroundColor: '#001529', height: '60px', color: 'white' }}>
+          <span style={{ marginBottom: '5px' }}>
+            Gabriel Felipe Werner - 2022 - <a href="https://github.com/gabrielgfw">Visit my Github</a>
+          </span>
+        </Footer>
       </Layout>
     </>
   );

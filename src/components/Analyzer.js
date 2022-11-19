@@ -300,7 +300,6 @@ function Analyzer() {
               </Panel>
             </Collapse>
 
-
           </div>
           <div style={{ width: '45%' }}>
             {/* <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '15px' }}>
@@ -350,10 +349,22 @@ function Analyzer() {
             header="Dados para uso externo (form dos dados da tabela)"
             key="1"
           >
+            {
+              propList.length ?
+                <div style={{ marginBottom: '10px' }}>
+                  <Button
+                    className="animate__animated"
+                    onClick={(event) => {
+                      navigator.clipboard.writeText(JSON.stringify(propList));
+                      event.currentTarget.classList.toggle('animate__rubberBand');
+                      feedbackMessage(true, 'Conteúdo copiado');
+                    }}>Copiar conteúdo</Button>
+                </div> : ''
+            }
             <JSONPretty
               id="json-pretty"
-              data={propList}
-              style={{ maxHeight: '200px', minHeight: '200px', overflowY: "scroll" }}
+              data={propList.length ? propList : 'Nenhum payload examinado'}
+              style={{ maxHeight: '200px', minHeight: '20px', overflowY: "scroll" }}
             />
           </Panel>
         </Collapse>

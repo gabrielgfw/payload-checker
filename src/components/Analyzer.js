@@ -1,26 +1,17 @@
-import { ApiOutlined, CompassOutlined } from '@ant-design/icons';
-import { Button, Form, Input, message, Switch, Table } from 'antd';
+import { ApiOutlined, CompassOutlined, NodeExpandOutlined } from '@ant-design/icons';
+import { Button, Collapse, Form, Input, message, Switch, Table } from 'antd';
 import TextArea from 'antd/lib/input/TextArea';
 import React, { useState } from 'react';
 import JSONPretty from 'react-json-pretty';
+import 'animate.css';
+import './Analyzer.css';
+
+const { Panel } = Collapse;
 
 function Analyzer() {
-
-  const payloadTeste = {
-    key: 0,
-    propertyName: 'nomeColaborador',
-    type: 'string',
-    description: 'Nome do colaborador',
-    fillRule: 'Enviar código de integração do colaborador',
-    required: true,
-    validated: false
-  }
-
   const [editingRow, setEditingRow] = useState(null);
   const [formPayloadAnalyzed] = Form.useForm();
   const [propList, setPropList] = useState([]);
-  const [extraPayloadProps, setExtraPayloadProps] = useState([]);
-
 
   const defaultColumns = [
     {
@@ -156,11 +147,7 @@ function Analyzer() {
   }
 
   function handlerRowBackground(rowProperties) {
-    if (rowProperties.required) {
-      return ''
-    } else {
-      return 'not-required-row'
-    }
+    return rowProperties.required ? '' : 'not-required-row';
   }
 
   function startExamination(values) {
@@ -262,6 +249,9 @@ function Analyzer() {
     if (Array.isArray(prop)) return 'array';
     return typeof (prop);
   }
+
+  // backgroundColor: 'rgb(0,21,41,0.9)'
+
   return (
     <>
       <Form
@@ -270,78 +260,103 @@ function Analyzer() {
       >
         <div style={{ display: 'flex', flexDirection: 'row', width: '100%', justifyContent: 'space-between', padding: '20px', paddingBottom: '0px' }}>
           <div style={{ width: '45%' }}>
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '15px' }}>
-              <ApiOutlined style={{ paddingRight: '5px', fontSize: '20px' }} />
-              <h1 style={{ paddingTop: '8px', marginBottom: '0px' }}>Payload Cliente</h1>
-              <span>Propriedades do payload que será analisado</span>
-            </div>
-            <Form.Item name="payloadInput">
-              <TextArea
-                placeholder="Cole um payload de exemplo"
-                style={{ maxHeight: '200px', minHeight: '200px', overflowY: "scroll", borderRadius: '5px' }}
-              />
-            </Form.Item>
+
+            <Collapse
+              className="collapse-wrapper"
+              defaultActiveKey={['1']}
+              style={{ backgroundColor: 'rgb(16,16,16,0.85)', border: 'none', borderBottom: '20px', borderRadius: '10px', boxShadow: '0px 0px 10px 0px rgb(34 34 34 / 15%)' }}
+            >
+              <Panel
+                header="Payload a ser analisádo (resultado final desejado)"
+                key="1"
+              >
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'left', padding: '15px', paddingTop: '0' }}>
+                  <h1 style={{ paddingTop: '2px', marginBottom: '0px' }}><strong>Payload Cliente</strong></h1>
+                  <span>Propriedades do payload que será analisado</span>
+                </div>
+                <Form.Item name="payloadInput">
+                  <TextArea
+                    placeholder="Cole um payload de exemplo"
+                    style={{
+                      resize: 'none',
+                      border: 'none',
+                      maxHeight: '200px',
+                      minHeight: '200px',
+                      overflowY: "scroll",
+                      borderRadius: '5px',
+                      boxShadow: '0px 0px 10px 0px rgb(34 34 34 / 5%)'
+                    }}
+                  />
+                </Form.Item>
+                <Form.Item>
+                  <Button
+                    style={{ width: '100%', height: '50px', boxShadow: '0px 0px 10px 0px rgb(34 34 34 / 20%)' }}
+                    type="primary"
+                    htmlType="submit"
+                  >
+                    <strong>Examinar Payload</strong>
+                  </Button>
+                </Form.Item>
+              </Panel>
+            </Collapse>
+
+
           </div>
           <div style={{ width: '45%' }}>
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '15px' }}>
+            {/* <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '15px' }}>
               <CompassOutlined style={{ paddingRight: '5px', fontSize: '20px' }} />
               <h1 style={{ paddingTop: '8px', marginBottom: '0px' }}>Payload Base</h1>
               <span>Propriedades do payload que será analisado</span>
             </div>
             <TextArea
               placeholder="Cole um payload de exemplo"
-              style={{ maxHeight: '200px', minHeight: '200px', overflowY: "scroll", borderRadius: '5px' }}
-            />
+              style={{ resize: 'none', border: 'none', maxHeight: '200px', minHeight: '200px', overflowY: "scroll", borderRadius: '5px' }}
+            /> */}
           </div>
         </div>
-
-        <div style={{ display: 'flex', flexDirection: 'row', width: '100%', justifyContent: 'space-between', padding: '20px', paddingTop: '0px' }}>
-          <div style={{ width: '45%' }}>
-            <Form.Item>
-              <Button
-                style={{ width: '100%', height: '50px' }}
-                type="primary"
-                htmlType="submit"
-              >
-                Examinar Payload
-              </Button>
-            </Form.Item>
-          </div>
-          <div style={{ width: '45%' }}>
-            <Button
-              style={{ width: '100%', height: '50px' }}
-              type="primary"
-              htmlType="submit"
-            >
-              Examinar Payload
-            </Button>
-          </div>
-        </div>
-
 
       </Form>
       <Form form={formPayloadAnalyzed} onFinish={saveRowChanges}>
 
         {propList.length ?
-          <Table
-            rowClassName={(record, index) => {
-              console.log(record);
-              return handlerRowBackground(record)
-            }}
-            dataSource={propList}
-            columns={defaultColumns}
-            sticky={true}
-            pagination={false}
-            scroll={{ y: '50vh' }}
-            bordered={false}
-            size={'small'}
-          />
+          <div
+            className="animate__animated animate__bounceIn"
+            style={{ margin: '40px 20px 20px 20px' }}>
+            <Table
+              rowClassName={(record, index) => {
+                console.log(record);
+                return handlerRowBackground(record)
+              }}
+              dataSource={propList}
+              columns={defaultColumns}
+              sticky={true}
+              pagination={false}
+              scroll={{ y: '50vh' }}
+              bordered={false}
+              size={'small'}
+              style={{ boxShadow: '0px 0px 10px 0px rgb(34 34 34 / 15%)' }}
+            />
+          </div>
+
           : <></>}
 
       </Form>
-      <div style={{ paddingTop: '20px' }}>
-        <JSONPretty id="json-pretty" data={propList}></JSONPretty>
-        {/* <code>{JSON.stringify(propList)}</code><br /> */}
+      <div style={{ margin: '40px 20px 20px 20px', width: '40%' }}>
+        <Collapse
+          className="collapse-wrapper"
+          style={{ backgroundColor: 'rgb(95 108 108 / 85%)', border: 'none', borderBottom: '20px', borderRadius: '10px', boxShadow: '0px 0px 10px 0px rgb(34 34 34 / 15%)' }}
+        >
+          <Panel
+            header="Dados para uso externo (form dos dados da tabela)"
+            key="1"
+          >
+            <JSONPretty
+              id="json-pretty"
+              data={propList}
+              style={{ maxHeight: '200px', minHeight: '200px', overflowY: "scroll" }}
+            />
+          </Panel>
+        </Collapse>
       </div>
     </>
   )

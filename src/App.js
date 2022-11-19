@@ -4,6 +4,7 @@ import { ProfileOutlined } from '@ant-design/icons';
 import './App.css';
 import Analyzer from './components/Analyzer';
 
+
 const { Header, Footer, Content } = Layout;
 
 const headerItems = [{
@@ -20,7 +21,7 @@ function App() {
   //height: '100vh'
   return (
     <>
-      <Layout style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+      <Layout style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', backgroundColor: 'rgb(230,230,230)' }}>
         <Header>
           <div className="logo" />
           <Menu
@@ -34,7 +35,7 @@ function App() {
             <Analyzer />
           </div>
         </Content>
-        <Footer style={{ textAlign: 'center', marginTop: 'auto' }}>Gabriel Felipe Werner - 2022</Footer>
+        <Footer style={{ textAlign: 'center', marginTop: 'auto', backgroundColor: '#001529', height: '20px', color: 'white' }}>Gabriel Felipe Werner - 2022</Footer>
       </Layout>
     </>
   );

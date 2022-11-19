@@ -1,42 +1,13 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600&display=swap');
+
+#root {
+  font-family: 'Poppins', sans-serif !important;
+}
+
 .logo {
   float: left;
   width: 120px;
   height: 31px;
   margin: 16px 24px 16px 0;
   background: rgba(255, 255, 255, 0.3);
-}
-
-.ant-row-rtl .logo {
-  float: right;
-  margin: 16px 0 16px 24px;
-}
-
-
-.not-required-row {
-  background-color: rgba(247, 122, 122, 0.3);
-}
-
-.not-required-row:hover {
-  background-color: rgba(253, 158, 158, 0.3);
-}
-
-.editable-cell {
-  z-index: 5;
-  cursor: pointer;
-  margin-left: 2px !important;
-  margin-top: 15px !important;
-}
-
-.editable-cell-value-wrap {
-  padding: 5px 12px;
-  cursor: pointer;
-}
-
-.editable-row:hover .editable-cell-value-wrap {
-  background-color: #969da11e;
-  transition: background-color 0.5s;
-}
-
-[data-theme='dark'] .editable-row:hover .editable-cell-value-wrap {
-  border: 1px solid #434343;
 }

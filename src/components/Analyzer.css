@@ -1,0 +1,60 @@
+.collapse-wrapper .ant-collapse-expand-icon,
+.ant-collapse-header-text {
+  color: #eeebeb;
+}
+
+.collapse-wrapper .ant-collapse-content {
+  background-color: rgb(241, 241, 241);
+  border-radius: 0px 0px 5px 5px !important;
+}
+
+.ant-row-rtl .logo {
+  float: right;
+  margin: 16px 0 16px 24px;
+}
+
+
+.not-required-row {
+  background-color: rgba(247, 122, 122, 0.3);
+}
+
+.not-required-row:hover {
+  background-color: rgba(253, 158, 158, 0.3);
+}
+
+.editable-cell {
+  z-index: 5;
+  cursor: pointer;
+  margin-left: 2px !important;
+  margin-top: 15px !important;
+}
+
+.editable-cell-value-wrap {
+  padding: 5px 12px;
+  cursor: pointer;
+}
+
+.editable-row:hover .editable-cell-value-wrap {
+  background-color: #969da11e;
+  transition: background-color 0.5s;
+}
+
+textarea {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace !important;
+}
+
+textarea::-webkit-scrollbar {
+  width: 1em;
+}
+
+textarea::-webkit-scrollbar-track {
+  -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.151);
+  border-radius: 5px;
+}
+
+
+textarea::-webkit-scrollbar-thumb {
+  background-color: rgb(192, 192, 192);
+  border-radius: 5px;
+}

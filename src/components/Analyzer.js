@@ -271,8 +271,8 @@ function Analyzer() {
                 key="1"
               >
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'left', padding: '15px', paddingTop: '0' }}>
-                  <h1 style={{ paddingTop: '2px', marginBottom: '0px' }}><strong>Payload Cliente</strong></h1>
-                  <span>Propriedades do payload que será analisado</span>
+                  <h1 style={{ paddingTop: '2px', marginBottom: '0px' }}><strong>Payload alvo da análise</strong></h1>
+                  <span>Insira abaixo o payload que será analisado, todos os campos do payload serão detalhados.</span>
                 </div>
                 <Form.Item name="payloadInput">
                   <TextArea
@@ -323,7 +323,6 @@ function Analyzer() {
             style={{ margin: '40px 20px 20px 20px' }}>
             <Table
               rowClassName={(record, index) => {
-                console.log(record);
                 return handlerRowBackground(record)
               }}
               dataSource={propList}

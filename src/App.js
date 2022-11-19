@@ -1,6 +1,5 @@
 import React from 'react';
 import { Layout, Menu, message } from 'antd';
-import { ProfileOutlined } from '@ant-design/icons';
 import './App.css';
 import Analyzer from './components/Analyzer';
 

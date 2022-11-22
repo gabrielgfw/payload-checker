@@ -126,29 +126,6 @@ function Analyzer() {
     }
   ];
 
-  function saveRowChanges(values) {
-    let selectedRowInformation = propList.find(pos => pos.key === editingRow);
-    let collapsedObjects = { ...selectedRowInformation, ...values };
-    let indexPosition = propList.findIndex(pos => pos.key === editingRow);
-    let allPropList = [...propList];
-    allPropList[indexPosition] = collapsedObjects;
-    setPropList(allPropList);
-    setEditingRow(null);
-  }
-
-  function changeRequiredRow(rowKey, boolean) {
-    let selectedRowInformation = propList.find(pos => pos.key === rowKey);
-    selectedRowInformation.required = boolean;
-    let indexPosition = propList.findIndex(pos => pos.key === editingRow);
-    let allPropList = [...propList];
-    allPropList[indexPosition] = selectedRowInformation;
-    setPropList(allPropList);
-  }
-
-  function handlerRowBackground(rowProperties) {
-    return rowProperties.required ? '' : 'not-required-row';
-  }
-
   function startExamination(values) {
     const { payloadInput } = values;
     try {
@@ -249,28 +226,47 @@ function Analyzer() {
     return typeof (prop);
   }
 
-  // backgroundColor: 'rgb(0,21,41,0.9)'
+  function saveRowChanges(values) {
+    let selectedRowInformation = propList.find(pos => pos.key === editingRow);
+    let collapsedObjects = { ...selectedRowInformation, ...values };
+    let indexPosition = propList.findIndex(pos => pos.key === editingRow);
+    let allPropList = [...propList];
+    allPropList[indexPosition] = collapsedObjects;
+    setPropList(allPropList);
+    setEditingRow(null);
+  }
+
+  function changeRequiredRow(rowKey, boolean) {
+    let selectedRowInformation = propList.find(pos => pos.key === rowKey);
+    selectedRowInformation.required = boolean;
+    let indexPosition = propList.findIndex(pos => pos.key === editingRow);
+    let allPropList = [...propList];
+    allPropList[indexPosition] = selectedRowInformation;
+    setPropList(allPropList);
+  }
+
+  function handlerRowBackground(rowProperties) {
+    return rowProperties.required ? '' : 'not-required-row';
+  }
+
 
   return (
     <>
-      <Form
-        name="payloadAnalyzed"
-        onFinish={startExamination}
-      >
-        <div style={{ display: 'flex', flexDirection: 'row', width: '100%', justifyContent: 'space-between', padding: '20px', paddingBottom: '0px' }}>
-          <div style={{ width: '45%' }}>
-
+      <div style={{ display: 'flex', flexDirection: 'row', width: '100%', justifyContent: 'space-between', padding: '20px', paddingBottom: '0px' }}>
+        <Form name="payloadAnalyzed" onFinish={startExamination} style={{ width: '80%' }}>
+          <div style={{ width: '100%' }}>
             <Collapse
               className="collapse-wrapper"
               defaultActiveKey={['1']}
               style={{ backgroundColor: 'rgb(16,16,16,0.85)', border: 'none', borderBottom: '20px', borderRadius: '10px', boxShadow: '0px 0px 10px 0px rgb(34 34 34 / 15%)' }}
             >
               <Panel
-                header="Payload a ser analisádo (resultado final desejado)"
+                header="Payload a ser analisádo"
                 key="1"
+                style={{ border: 'none' }}
               >
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'left', padding: '15px', paddingTop: '0' }}>
-                  <h1 style={{ paddingTop: '2px', marginBottom: '0px' }}><strong>Payload alvo da análise</strong></h1>
+                  {/* <h1 style={{ paddingTop: '2px', marginBottom: '0px' }}><strong>Payload alvo da análise</strong></h1> */}
                   <span>Insira abaixo o payload que será analisado, todos os campos do payload serão detalhados.</span>
                 </div>
                 <Form.Item name="payloadInput">
@@ -287,7 +283,7 @@ function Analyzer() {
                     }}
                   />
                 </Form.Item>
-                <Form.Item>
+                <Form.Item style={{ marginBottom: '5px' }}>
                   <Button
                     style={{ width: '100%', height: '50px', boxShadow: '0px 0px 10px 0px rgb(34 34 34 / 20%)' }}
                     type="primary"
@@ -300,8 +296,9 @@ function Analyzer() {
             </Collapse>
 
           </div>
-          <div style={{ width: '45%' }}>
-            {/* <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '15px' }}>
+        </Form>
+        <div style={{ width: '100%' }}>
+          {/* <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '15px' }}>
               <CompassOutlined style={{ paddingRight: '5px', fontSize: '20px' }} />
               <h1 style={{ paddingTop: '8px', marginBottom: '0px' }}>Payload Base</h1>
               <span>Propriedades do payload que será analisado</span>
@@ -310,20 +307,17 @@ function Analyzer() {
               placeholder="Cole um payload de exemplo"
               style={{ resize: 'none', border: 'none', maxHeight: '200px', minHeight: '200px', overflowY: "scroll", borderRadius: '5px' }}
             /> */}
-          </div>
         </div>
+      </div>
 
-      </Form>
+
       <Form form={formPayloadAnalyzed} onFinish={saveRowChanges}>
-
         {propList.length ?
           <div
             className="animate__animated animate__bounceIn"
             style={{ margin: '40px 20px 20px 20px' }}>
             <Table
-              rowClassName={(record, index) => {
-                return handlerRowBackground(record)
-              }}
+              rowClassName={(record, index) => handlerRowBackground(record)}
               dataSource={propList}
               columns={defaultColumns}
               sticky={true}
@@ -334,18 +328,22 @@ function Analyzer() {
               style={{ boxShadow: '0px 0px 10px 0px rgb(34 34 34 / 15%)' }}
             />
           </div>
-
           : <></>}
-
       </Form>
-      <div style={{ margin: '40px 20px 20px 20px', width: '40%' }}>
+      <div style={{ margin: '40px 20px 20px 20px', width: '30%' }}>
         <Collapse
           className="collapse-wrapper"
-          style={{ backgroundColor: 'rgb(95 108 108 / 85%)', border: 'none', borderBottom: '20px', borderRadius: '10px', boxShadow: '0px 0px 10px 0px rgb(34 34 34 / 15%)' }}
+          style={{
+            backgroundColor: 'rgb(95 108 108 / 85%)',
+            border: 'none', borderBottom: '20px',
+            borderRadius: '10px',
+            boxShadow: '0px 0px 10px 0px rgb(34 34 34 / 15%)'
+          }}
         >
           <Panel
-            header="Dados para uso externo (form dos dados da tabela)"
+            header="Informações da tabela"
             key="1"
+            style={{ border: 'none' }}
           >
             {
               propList.length ?

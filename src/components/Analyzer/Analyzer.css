@@ -16,10 +16,11 @@
 
 .not-required-row {
   background-color: rgba(247, 122, 122, 0.3);
+  max-height: 20px;
 }
 
 .not-required-row:hover {
-  background-color: rgba(253, 158, 158, 0.3);
+  background-color: rgba(253, 158, 158, 0.3) !important;
 }
 
 .editable-cell {

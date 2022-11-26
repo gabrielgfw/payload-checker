@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import JSONPretty from 'react-json-pretty';
 import 'animate.css';
 import './Analyzer.css';
+import Spreadsheet from 'react-spreadsheet';
 
 const { Panel } = Collapse;
 
@@ -11,6 +12,7 @@ function Analyzer() {
   const [editingRow, setEditingRow] = useState(null);
   const [formPayloadAnalyzed] = Form.useForm();
   const [propList, setPropList] = useState([]);
+  const [sheetData, setSheetData] = useState([]);
 
   const defaultColumns = [
     {
@@ -133,11 +135,34 @@ function Analyzer() {
       const payloadSimplified = reduceArraysForSimplicity(payloadParsed);
       const examined = examinePayload(payloadSimplified, []);
       setPropList([...examined]);
+      setSheetData(parsePropsToSheet([...examined]));
       feedbackMessage(true, 'Payload examinado com sucesso');
     } catch (error) {
       feedbackMessage(false, error);
     }
   }
+
+  function parsePropsToSheet(propList) {
+    let header = [
+      { value: "Campo" },
+      { value: "Tipo" },
+      { value: "Descrição" },
+      { value: "Obrigatório" },
+      { value: "Regra Preenchimento" },
+    ];
+    let rows = [];
+    propList.forEach(row => {
+      let rowData = [];
+      for(let rowProp in row) {
+        if(rowProp != "key") {
+          rowData.push({ value: row[rowProp]});
+        }
+      }
+      rows.push(rowData);
+    });
+    return [ header, ...rows ];
+  }
+
 
   function feedbackMessage(success, text) {
     success ? message.success(text) : message.error(text)
@@ -310,7 +335,8 @@ function Analyzer() {
         </div>
       </div>
 
-
+      <Spreadsheet data={sheetData} />
+      
       <Form form={formPayloadAnalyzed} onFinish={saveRowChanges}>
         {propList.length ?
           <div
@@ -325,11 +351,12 @@ function Analyzer() {
               scroll={{ y: '50vh' }}
               bordered={false}
               size={'small'}
-              style={{ boxShadow: '0px 0px 10px 0px rgb(34 34 34 / 15%)' }}
+              style={{ boxShadow: '0px 0px 10px 0px rgb(34 34 34 / 15%)', fontSize: "5px" }}
             />
           </div>
           : <></>}
       </Form>
+
       <div style={{ margin: '40px 20px 20px 20px', width: '30%' }}>
         <Collapse
           className="collapse-wrapper"

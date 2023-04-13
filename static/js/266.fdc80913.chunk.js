@@ -1,2 +1,0 @@
-"use strict";(self.webpackChunkanalise_funcional=self.webpackChunkanalise_funcional||[]).push([[266],{1266:function(n,e,a){a.r(e);a(2791);var i=a(184);e.default=function(){return(0,i.jsx)(i.Fragment,{children:(0,i.jsx)("h1",{children:"Nothing here"})})}}}]);
-//# sourceMappingURL=266.fdc80913.chunk.js.map

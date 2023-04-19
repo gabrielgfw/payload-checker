@@ -1,0 +1,25 @@
+.container {
+  padding-top: 20px;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+}
+
+.text-content {
+  display: flex;
+  flex-direction: column;
+  max-width: 700px;
+  justify-content: center;
+  padding: 30px;
+}
+
+.text-content h1 {
+  font-size: 35px;
+  font-weight: 800;
+  margin-bottom: 5px;
+}
+
+.text-content span {
+  font-size: 20px;
+  font-weight: 300;
+}

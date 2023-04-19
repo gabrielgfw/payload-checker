@@ -1,18 +1,19 @@
 import React, { lazy, Suspense } from 'react';
 import { Layout, Menu, Skeleton } from 'antd';
 import './App.css';
-import { Route, Routes, useNavigate } from "react-router-dom";
+import { Route, Routes, useNavigate, Navigate } from "react-router-dom";
 
-const Home = lazy(() => import('./pages/Home'));
+
+const Info = lazy(() => import('./pages/Info'));
 const Checker = lazy(() => import('./pages/Checker'));
 
 const { Header, Footer, Content } = Layout;
 const headerItems = [{
-  key: '/home',
-  label: 'Home'
+  key: '/payload-checker/info',
+  label: 'Info'
 },
 {
-  key: '/checker',
+  key: '/payload-checker/checker',
   label: 'Checker'
 }];
 
@@ -39,15 +40,16 @@ function App() {
           <div style={{ height: '100%' }}>
             <Suspense fallback={<Skeleton active />}>
               <Routes>
-                <Route path="/home" element={<Home />} />
-                <Route path="/checker" element={<Checker />} />
+                <Route path="/payload-checker/" element={<Navigate to="/payload-checker/info" />} />
+                <Route path="/payload-checker/info" element={<Info />} />
+                <Route path="/payload-checker/checker" element={<Checker />} />
               </Routes>
             </Suspense>
           </div>
         </Content>
         <Footer style={{ textAlign: 'center', marginTop: 'auto', backgroundColor: 'rgb(12,12,12)', height: '60px', color: '#858585', fontSize: '0.8rem' }}>
           <span style={{ marginBottom: '5px' }}>
-            Gabriel Felipe Werner - 2022 - <a href="https://github.com/gabrielgfw">Visit my Github</a>
+            Gabriel Werner - 2023 - <a href="https://github.com/gabrielgfw/payload-checker">Github</a>
           </span>
         </Footer>
       </Layout>

@@ -14,7 +14,7 @@ function Analyzer() {
 
   const defaultColumns = [
     {
-      title: 'Campo',
+      title: 'Name',
       dataIndex: 'propertyName',
       key: 'propertyName',
       render: (text, record) => {
@@ -32,7 +32,7 @@ function Analyzer() {
       }
     },
     {
-      title: 'Tipo',
+      title: 'Type',
       dataIndex: 'type',
       key: 'type',
       render: (text, record) => {
@@ -50,7 +50,7 @@ function Analyzer() {
       }
     },
     {
-      title: 'Descrição',
+      title: 'Description',
       dataIndex: 'description',
       key: 'description',
       render: (text, record) => {
@@ -68,7 +68,7 @@ function Analyzer() {
       }
     },
     {
-      title: 'Regra de Preenchimento',
+      title: 'Fill rule',
       dataIndex: 'fillRule',
       key: 'fillRule',
       render: (text, record) => {
@@ -86,7 +86,7 @@ function Analyzer() {
       }
     },
     {
-      title: 'Obrigatório',
+      title: 'Required',
       dataIndex: 'required',
       key: 'required',
       render: (_, record) => {
@@ -103,7 +103,7 @@ function Analyzer() {
       }
     },
     {
-      title: 'Ações',
+      title: 'Actions',
       dataIndex: 'validated',
       key: 'validated',
       render: (_, record) => {
@@ -118,8 +118,8 @@ function Analyzer() {
                 fillRule: record.fillRule,
                 required: record.required
               })
-            }}>Editar</Button>
-            <Button type="link" htmlType="submit">Salvar</Button>
+            }}>Edit</Button>
+            <Button type="link" htmlType="submit">Save</Button>
           </>
         );
       }
@@ -133,7 +133,7 @@ function Analyzer() {
       const payloadSimplified = reduceArraysForSimplicity(payloadParsed);
       const examined = examinePayload(payloadSimplified, []);
       setPropList([...examined]);
-      feedbackMessage(true, 'Payload examinado com sucesso');
+      feedbackMessage(true, 'Payload checked');
     } catch (error) {
       feedbackMessage(false, error);
     }
@@ -148,7 +148,7 @@ function Analyzer() {
     try {
       return JSON.parse(payloadInput);
     } catch (error) {
-      throw 'Payload informado é inválido';
+      throw 'Not a valid payload';
     }
   }
 
@@ -182,7 +182,7 @@ function Analyzer() {
 
       if (propType === 'object' || propType === 'array') {
         properties.push({
-          propertyName: propZerada ? '-- início --' : `${prop} (INÍCIO)`,
+          propertyName: propZerada ? '-- start --' : `${prop} (START)`,
           type: propType,
           description: '',
           required: true,
@@ -192,7 +192,7 @@ function Analyzer() {
         examinePayload(payloadParsed[prop], properties);
 
         properties.push({
-          propertyName: propZerada ? '-- fim --' : `${prop} (FIM)`,
+          propertyName: propZerada ? '-- end --' : `${prop} (END)`,
           type: propType,
           description: '',
           required: true,
@@ -222,8 +222,10 @@ function Analyzer() {
   }
 
   function returnPropertyType(prop) {
-    if (!prop) return 'null';
     if (Array.isArray(prop)) return 'array';
+    if (prop === "") return 'string'
+    if (prop === 0) return 'number'
+    if (!prop) return 'null';
     return typeof (prop);
   }
 
@@ -253,64 +255,6 @@ function Analyzer() {
 
   return (
     <>
-      <div style={{ display: 'flex', flexDirection: 'row', width: '100%', justifyContent: 'space-between', padding: '20px', paddingBottom: '0px' }}>
-        <Form name="payloadAnalyzed" onFinish={startExamination} style={{ width: '80%' }}>
-          <div style={{ width: '100%' }}>
-            <Collapse
-              className="collapse-wrapper"
-              defaultActiveKey={['1']}
-              style={{ backgroundColor: 'rgb(16,16,16,0.85)', border: 'none', borderBottom: '20px', borderRadius: '10px', boxShadow: '0px 0px 10px 0px rgb(34 34 34 / 15%)' }}
-            >
-              <Panel
-                header="Payload a ser analisádo"
-                key="1"
-                style={{ border: 'none' }}
-              >
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'left', padding: '15px', paddingTop: '0' }}>
-                  {/* <h1 style={{ paddingTop: '2px', marginBottom: '0px' }}><strong>Payload alvo da análise</strong></h1> */}
-                  <span>Insira abaixo o payload que será analisado, todos os campos do payload serão detalhados.</span>
-                </div>
-                <Form.Item name="payloadInput">
-                  <TextArea
-                    placeholder="Cole um payload de exemplo"
-                    style={{
-                      resize: 'none',
-                      border: 'none',
-                      maxHeight: '200px',
-                      minHeight: '200px',
-                      overflowY: "scroll",
-                      borderRadius: '5px',
-                      boxShadow: '0px 0px 10px 0px rgb(34 34 34 / 5%)'
-                    }}
-                  />
-                </Form.Item>
-                <Form.Item style={{ marginBottom: '5px' }}>
-                  <Button
-                    style={{ width: '100%', height: '50px', boxShadow: '0px 0px 10px 0px rgb(34 34 34 / 20%)' }}
-                    type="primary"
-                    htmlType="submit"
-                  >
-                    <strong>Examinar Payload</strong>
-                  </Button>
-                </Form.Item>
-              </Panel>
-            </Collapse>
-
-          </div>
-        </Form>
-        <div style={{ width: '100%' }}>
-          {/* <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '15px' }}>
-              <CompassOutlined style={{ paddingRight: '5px', fontSize: '20px' }} />
-              <h1 style={{ paddingTop: '8px', marginBottom: '0px' }}>Payload Base</h1>
-              <span>Propriedades do payload que será analisado</span>
-            </div>
-            <TextArea
-              placeholder="Cole um payload de exemplo"
-              style={{ resize: 'none', border: 'none', maxHeight: '200px', minHeight: '200px', overflowY: "scroll", borderRadius: '5px' }}
-            /> */}
-        </div>
-      </div>
-
 
       <Form form={formPayloadAnalyzed} onFinish={saveRowChanges}>
         {propList.length ?
@@ -332,6 +276,65 @@ function Analyzer() {
           : <></>}
       </Form>
 
+      <div style={{ display: 'flex', flexDirection: 'row', width: '100%', justifyContent: 'space-between', padding: '20px', paddingBottom: '0px' }}>
+        <Form name="payloadAnalyzed" onFinish={startExamination} style={{ width: '80%' }}>
+          <div style={{ width: '100%' }}>
+            <Collapse
+              className="collapse-wrapper"
+              defaultActiveKey={['1']}
+              style={{ backgroundColor: 'rgb(16,16,16,0.85)', border: 'none', borderBottom: '20px', borderRadius: '10px', boxShadow: '0px 0px 10px 0px rgb(34 34 34 / 15%)' }}
+            >
+              <Panel
+                header="Payload to be checked"
+                key="1"
+                style={{ border: 'none' }}
+              >
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'left', padding: '15px', paddingTop: '0' }}>
+                  <span>
+                    Enter the payload to be checked below, all payload fields will be detailed.
+                  </span>
+                </div>
+                <Form.Item name="payloadInput">
+                  <TextArea
+                    placeholder="Paste a valid payload to be checked."
+                    style={{
+                      resize: 'none',
+                      border: 'none',
+                      maxHeight: '200px',
+                      minHeight: '200px',
+                      overflowY: "scroll",
+                      borderRadius: '5px',
+                      boxShadow: '0px 0px 10px 0px rgb(34 34 34 / 5%)'
+                    }}
+                  />
+                </Form.Item>
+                <Form.Item style={{ marginBottom: '5px' }}>
+                  <Button
+                    style={{ width: '100%', height: '50px', boxShadow: '0px 0px 10px 0px rgb(34 34 34 / 20%)' }}
+                    type="primary"
+                    htmlType="submit"
+                  >
+                    <strong>Check Payload</strong>
+                  </Button>
+                </Form.Item>
+              </Panel>
+            </Collapse>
+
+          </div>
+        </Form>
+        <div style={{ width: '100%' }}>
+          {/* <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '15px' }}>
+              <CompassOutlined style={{ paddingRight: '5px', fontSize: '20px' }} />
+              <h1 style={{ paddingTop: '8px', marginBottom: '0px' }}>Payload Base</h1>
+              <span>Propriedades do payload que será analisado</span>
+            </div>
+            <TextArea
+              placeholder="Cole um payload de exemplo"
+              style={{ resize: 'none', border: 'none', maxHeight: '200px', minHeight: '200px', overflowY: "scroll", borderRadius: '5px' }}
+            /> */}
+        </div>
+      </div>
+
       <div style={{ margin: '40px 20px 20px 20px', width: '30%' }}>
         <Collapse
           className="collapse-wrapper"
@@ -343,7 +346,7 @@ function Analyzer() {
           }}
         >
           <Panel
-            header="Informações da tabela"
+            header="Raw table information"
             key="1"
             style={{ border: 'none' }}
           >
@@ -351,17 +354,20 @@ function Analyzer() {
               propList.length ?
                 <div style={{ marginBottom: '10px' }}>
                   <Button
-                    className="animate__animated"
                     onClick={(event) => {
+                      const animationClasses = ['animate__animated', 'animate__rubberBand'];
                       navigator.clipboard.writeText(JSON.stringify(propList));
-                      event.currentTarget.classList.toggle('animate__rubberBand');
-                      feedbackMessage(true, 'Conteúdo copiado');
-                    }}>Copiar conteúdo</Button>
+                      event.currentTarget.classList.add(...animationClasses);
+                      setTimeout(() => {
+                        event.currentTarget.classList.remove(...animationClasses);
+                      }, 1000);
+                      feedbackMessage(true, 'Copied to clipboard');
+                    }}>Copy Content</Button>
                 </div> : ''
             }
             <JSONPretty
               id="json-pretty"
-              data={propList.length ? propList : 'Nenhum payload examinado'}
+              data={propList.length ? propList : 'No payload checked yet.'}
               style={{ maxHeight: '200px', minHeight: '20px', overflowY: "scroll" }}
             />
           </Panel>

@@ -28,7 +28,6 @@ function App() {
     <>
       <Layout style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', backgroundColor: 'rgb(130,190,255)' }}>
         <Header theme="light">
-          <div className="logo" />
           <Menu
             onClick={({ key }) => { navigate(key) }}
             theme="dark"

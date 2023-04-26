@@ -2,8 +2,10 @@ import { Button, Collapse, Form, Input, message, Switch, Table } from 'antd';
 import TextArea from 'antd/lib/input/TextArea';
 import React, { useState } from 'react';
 import JSONPretty from 'react-json-pretty';
+import * as XLSX from 'xlsx';
 import 'animate.css';
 import './Analyzer.css';
+import { DownloadOutlined } from '@ant-design/icons';
 
 const { Panel } = Collapse;
 
@@ -155,12 +157,6 @@ function Analyzer() {
   function reduceArraysForSimplicity(payloadParsed) {
     let overallArrayClean = Array.isArray(payloadParsed) ? payloadParsed.slice(0, 1) : payloadParsed;
 
-    console.log(`# Raw payload values:`);
-    console.log(payloadParsed);
-
-    console.log(`# Overall:`);
-    console.log(overallArrayClean);
-
     for (let prop in overallArrayClean) {
       const propType = returnPropertyType(overallArrayClean[prop]);
       if (propType === 'array') {
@@ -252,15 +248,96 @@ function Analyzer() {
     return rowProperties.required ? '' : 'not-required-row';
   }
 
+  function exportToCSV() {
+    let text = `Name;Type;Description;Fill rule;Required\n`;
+    propList.forEach(line => {
+      text += `${line.propertyName};${line.type};${line.description};${line.fillRule};${line.required}\n`
+    });
+    const blob = new Blob([text], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.href = url;
+    link.setAttribute('download', 'payload-checker.csv');
+    link.click();
+  }
+
+  function exportToXLSX() {
+    const propFiltered = propList.map(p => {
+      return {
+        'Name': p.propertyName,
+        'Type': p.type,
+        'Description': p.description,
+        'Fill rule': p.fillRule,
+        'Required': p.required
+      }
+    });
+    const sheet = XLSX.utils.json_to_sheet(propFiltered);
+    const book = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(book, sheet, 'Sheet1');
+    const xlsDocument = XLSX.write(book, { type: 'buffer', bookType: 'xlsx' });
+    const blob = new Blob([xlsDocument], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', 'payload-checker.xlsx');
+    link.click();
+  }
+
+  function exportToTXT() {
+    let text = `Name\tType\tDescription\tFill rule\tRequired\n`;
+    propList.forEach(line => {
+      text += `${line.propertyName}\t${line.type}\t${line.description}\t${line.fillRule}\t${line.required}\n`
+    });
+    const blob = new Blob([text], { type: 'text/plain;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.href = url;
+    link.setAttribute('download', 'payload-checker.txt');
+    link.click();
+  }
+
 
   return (
     <>
+      {propList.length ?
+        <div
+          classeName="animate__animated animate__fadeInLeft"
+          style={{ display: 'flex', flexDirection: 'row', width: '100%', justifyContent: 'end', paddingRight: '20px' }}
+        >
+          <div>
+            <Button
+              style={{ margin: '10px' }}
+              type="primary"
+              onClick={exportToCSV}
+            >
+              <DownloadOutlined />
+              Export to CSV
+            </Button>
+            <Button
+              style={{ margin: '10px' }}
+              type="primary"
+              onClick={exportToXLSX}
+            >
+              <DownloadOutlined />
+              Export to XLSX
+            </Button>
+            <Button
+              style={{ margin: '10px' }}
+              type="primary"
+              onClick={exportToTXT}
+            >
+              <DownloadOutlined />
+              Export to TXT
+            </Button>
+          </div>
+        </div>
+        : <></>}
 
       <Form form={formPayloadAnalyzed} onFinish={saveRowChanges}>
         {propList.length ?
           <div
-            className="animate__animated animate__bounceIn"
-            style={{ margin: '40px 20px 20px 20px' }}>
+            className="animate__animated animate__fadeInLeft"
+            style={{ margin: '10px 20px 20px 20px' }}>
             <Table
               rowClassName={(record, index) => handlerRowBackground(record)}
               dataSource={propList}
@@ -323,55 +400,7 @@ function Analyzer() {
           </div>
         </Form>
         <div style={{ width: '100%' }}>
-          {/* <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '15px' }}>
-              <CompassOutlined style={{ paddingRight: '5px', fontSize: '20px' }} />
-              <h1 style={{ paddingTop: '8px', marginBottom: '0px' }}>Payload Base</h1>
-              <span>Propriedades do payload que será analisado</span>
-            </div>
-            <TextArea
-              placeholder="Cole um payload de exemplo"
-              style={{ resize: 'none', border: 'none', maxHeight: '200px', minHeight: '200px', overflowY: "scroll", borderRadius: '5px' }}
-            /> */}
         </div>
-      </div>
-
-      <div style={{ margin: '40px 20px 20px 20px', width: '30%' }}>
-        <Collapse
-          className="collapse-wrapper"
-          style={{
-            backgroundColor: 'rgb(95 108 108 / 85%)',
-            border: 'none', borderBottom: '20px',
-            borderRadius: '10px',
-            boxShadow: '0px 0px 10px 0px rgb(34 34 34 / 15%)'
-          }}
-        >
-          <Panel
-            header="Raw table information"
-            key="1"
-            style={{ border: 'none' }}
-          >
-            {
-              propList.length ?
-                <div style={{ marginBottom: '10px' }}>
-                  <Button
-                    onClick={(event) => {
-                      const animationClasses = ['animate__animated', 'animate__rubberBand'];
-                      navigator.clipboard.writeText(JSON.stringify(propList));
-                      event.currentTarget.classList.add(...animationClasses);
-                      setTimeout(() => {
-                        event.currentTarget.classList.remove(...animationClasses);
-                      }, 1000);
-                      feedbackMessage(true, 'Copied to clipboard');
-                    }}>Copy Content</Button>
-                </div> : ''
-            }
-            <JSONPretty
-              id="json-pretty"
-              data={propList.length ? propList : 'No payload checked yet.'}
-              style={{ maxHeight: '200px', minHeight: '20px', overflowY: "scroll" }}
-            />
-          </Panel>
-        </Collapse>
       </div>
     </>
   )

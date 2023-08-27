@@ -1,18 +1,41 @@
 import { Button, Collapse, Form, Input, message, Switch, Table } from 'antd';
 import TextArea from 'antd/lib/input/TextArea';
-import React, { useState } from 'react';
-import JSONPretty from 'react-json-pretty';
+import React, { useEffect, useState } from 'react';
 import * as XLSX from 'xlsx';
 import 'animate.css';
 import './Analyzer.css';
-import { DownloadOutlined } from '@ant-design/icons';
+import { DownloadOutlined, DeleteOutlined } from '@ant-design/icons';
+import * as ProjectSession from '../../services/ProjectSession';
+import { v4 as uuidv4 } from 'uuid';
+import ConfirmModal from '../ConfirmModal/ConfirmModal';
 
 const { Panel } = Collapse;
 
 function Analyzer() {
-  const [editingRow, setEditingRow] = useState(null);
+  const [editingRow, setEditingRow] = useState();
   const [formPayloadAnalyzed] = Form.useForm();
+  const [projectId, setProjectId] = useState('');
+  const [payloadChecked, setPayloadChecked] = useState({});
   const [propList, setPropList] = useState([]);
+
+  // Save on changes:
+  useEffect(() => {
+    if (propList.length && payloadChecked) {
+      saveCurrentChanges();
+    }
+  }, [propList, payloadChecked]);
+
+
+  // Load once:
+  useEffect(() => {
+    const storagedProject = JSON.parse(ProjectSession.loadProjects());
+    if (storagedProject) {
+      console.log(`# Loaded Project found!!`);
+      console.log(storagedProject);
+      setPayloadChecked(storagedProject.projects[0].payload_checkd);
+      setPropList(storagedProject.projects[0].prop_list);
+    }
+  }, []);
 
   const defaultColumns = [
     {
@@ -134,11 +157,32 @@ function Analyzer() {
       const payloadParsed = parseInput(payloadInput);
       const payloadSimplified = reduceArraysForSimplicity(payloadParsed);
       const examined = examinePayload(payloadSimplified, []);
+      setPayloadChecked(payloadSimplified);
       setPropList([...examined]);
       feedbackMessage(true, 'Payload checked');
     } catch (error) {
       feedbackMessage(false, error);
     }
+  }
+
+
+  function handleDeleteProject() {
+    ProjectSession.deleteProject();
+    setProjectId('');
+    setPayloadChecked({});
+    setPropList([]);
+    feedbackMessage(true, 'Project deleted');
+  }
+
+
+  function saveCurrentChanges() {
+    const newUuid = uuidv4();
+    if (!projectId) setProjectId(newUuid);
+    ProjectSession.saveProject({
+      uuid: projectId ? projectId : newUuid,
+      payload_checked: payloadChecked,
+      prop_list: propList
+    });
   }
 
 
@@ -301,7 +345,7 @@ function Analyzer() {
     <>
       {propList.length ?
         <div
-          classeName="animate__animated animate__fadeInLeft"
+          className="animate__animated animate__fadeInLeft"
           style={{ display: 'flex', flexDirection: 'row', width: '100%', justifyContent: 'end', paddingRight: '20px' }}
         >
           <div>
@@ -329,6 +373,13 @@ function Analyzer() {
               <DownloadOutlined />
               Export to TXT
             </Button>
+
+            <ConfirmModal
+              buttonText="Delete Project"
+              modalTitle="Delete current project"
+              modalText="Confirm to delete current project"
+              confirmAction={handleDeleteProject}
+            />
           </div>
         </div>
         : <></>}

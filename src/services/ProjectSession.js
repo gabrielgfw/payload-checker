@@ -15,8 +15,8 @@ export function saveProject(project) {
 
   if (currentSave) {
     newSave = JSON.parse(currentSave);
-    const projectAlredyExists = newSave.projects.find(p => p.uuid === project.uuid);
-    if (projectAlredyExists) { newSave.projects = newSave.projects.filter(p => p.uuid !== projectAlredyExists.uuid) };
+    const projectAlreadyExists = newSave.projects.find(p => p.uuid === project.uuid);
+    if (projectAlreadyExists) { newSave.projects = newSave.projects.filter(p => p.uuid !== projectAlreadyExists.uuid) };
     project.last_update = currentDate;
     newSave.projects.push(project);
 

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Button, Modal } from 'antd';
 
-const ConfirmModal = ({ buttonText, modalTitle, modalText, confirmAction }) => {
+const ConfirmModal = ({ buttonText, buttonType, buttonDanger, modalTitle, modalText, confirmAction }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const showModal = () => {
     setIsModalOpen(true);
@@ -15,7 +15,7 @@ const ConfirmModal = ({ buttonText, modalTitle, modalText, confirmAction }) => {
   };
   return (
     <>
-      <Button type="primary" danger onClick={showModal}>
+      <Button type={buttonType} danger={buttonDanger} onClick={showModal}>
         {buttonText}
       </Button>
       <Modal title={modalTitle} open={isModalOpen} onOk={handleOk} onCancel={handleCancel}>

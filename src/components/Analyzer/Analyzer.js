@@ -1,15 +1,15 @@
 import { Button, Collapse, Form, Input, message, Switch, Table } from 'antd';
 import TextArea from 'antd/lib/input/TextArea';
-import React, { useEffect, useState } from 'react';
-import * as XLSX from 'xlsx';
+import React, { createContext, useEffect, useState } from 'react';
 import 'animate.css';
 import './Analyzer.css';
-import { DownloadOutlined, DeleteOutlined } from '@ant-design/icons';
 import * as ProjectSession from '../../services/ProjectSession';
 import { v4 as uuidv4 } from 'uuid';
 import ConfirmModal from '../ConfirmModal/ConfirmModal';
+import ExportButton from '../ExportButton/ExportButton';
 
 const { Panel } = Collapse;
+export const SessionContext = createContext(null);
 
 function Analyzer() {
   const [editingRow, setEditingRow] = useState();
@@ -28,12 +28,11 @@ function Analyzer() {
 
   // Load once:
   useEffect(() => {
-    const storagedProject = JSON.parse(ProjectSession.loadProjects());
-    if (storagedProject) {
-      console.log(`# Loaded Project found!!`);
-      console.log(storagedProject);
-      setPayloadChecked(storagedProject.projects[0].payload_checkd);
-      setPropList(storagedProject.projects[0].prop_list);
+    const storagedProject = JSON.parse(ProjectSession.loadStorageFromClient());
+    if (storagedProject?.selectedProject) {
+      const currentProject = storagedProject.projects.find(p => p.uuid === storagedProject.selectedProject);
+      setPayloadChecked(currentProject.payload_checked);
+      setPropList(currentProject.prop_list);
     }
   }, []);
 
@@ -167,7 +166,7 @@ function Analyzer() {
 
 
   function handleDeleteProject() {
-    ProjectSession.deleteProject();
+    ProjectSession.deleteProject(projectId);
     setProjectId('');
     setPayloadChecked({});
     setPropList([]);
@@ -178,11 +177,12 @@ function Analyzer() {
   function saveCurrentChanges() {
     const newUuid = uuidv4();
     if (!projectId) setProjectId(newUuid);
-    ProjectSession.saveProject({
+    const projectInfo = {
       uuid: projectId ? projectId : newUuid,
       payload_checked: payloadChecked,
       prop_list: propList
-    });
+    };
+    ProjectSession.saveProject(projectInfo);
   }
 
 
@@ -292,167 +292,98 @@ function Analyzer() {
     return rowProperties.required ? '' : 'not-required-row';
   }
 
-  function exportToCSV() {
-    let text = `Name;Type;Description;Fill rule;Required\n`;
-    propList.forEach(line => {
-      text += `${line.propertyName};${line.type};${line.description};${line.fillRule};${line.required}\n`
-    });
-    const blob = new Blob([text], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    link.href = url;
-    link.setAttribute('download', 'payload-checker.csv');
-    link.click();
-  }
-
-  function exportToXLSX() {
-    const propFiltered = propList.map(p => {
-      return {
-        'Name': p.propertyName,
-        'Type': p.type,
-        'Description': p.description,
-        'Fill rule': p.fillRule,
-        'Required': p.required
-      }
-    });
-    const sheet = XLSX.utils.json_to_sheet(propFiltered);
-    const book = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(book, sheet, 'Sheet1');
-    const xlsDocument = XLSX.write(book, { type: 'buffer', bookType: 'xlsx' });
-    const blob = new Blob([xlsDocument], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.setAttribute('download', 'payload-checker.xlsx');
-    link.click();
-  }
-
-  function exportToTXT() {
-    let text = `Name\tType\tDescription\tFill rule\tRequired\n`;
-    propList.forEach(line => {
-      text += `${line.propertyName}\t${line.type}\t${line.description}\t${line.fillRule}\t${line.required}\n`
-    });
-    const blob = new Blob([text], { type: 'text/plain;charset=utf-8;' });
-    const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    link.href = url;
-    link.setAttribute('download', 'payload-checker.txt');
-    link.click();
-  }
-
-
   return (
     <>
-      {propList.length ?
-        <div
-          className="animate__animated animate__fadeInLeft"
-          style={{ display: 'flex', flexDirection: 'row', width: '100%', justifyContent: 'end', paddingRight: '20px' }}
-        >
-          <div>
-            <Button
-              style={{ margin: '10px' }}
-              type="primary"
-              onClick={exportToCSV}
-            >
-              <DownloadOutlined />
-              Export to CSV
-            </Button>
-            <Button
-              style={{ margin: '10px' }}
-              type="primary"
-              onClick={exportToXLSX}
-            >
-              <DownloadOutlined />
-              Export to XLSX
-            </Button>
-            <Button
-              style={{ margin: '10px' }}
-              type="primary"
-              onClick={exportToTXT}
-            >
-              <DownloadOutlined />
-              Export to TXT
-            </Button>
-
-            <ConfirmModal
-              buttonText="Delete Project"
-              modalTitle="Delete current project"
-              modalText="Confirm to delete current project"
-              confirmAction={handleDeleteProject}
-            />
-          </div>
-        </div>
-        : <></>}
-
-      <Form form={formPayloadAnalyzed} onFinish={saveRowChanges}>
+      <SessionContext.Provider value={{ projectId, propList, payloadChecked }}>
         {propList.length ?
           <div
             className="animate__animated animate__fadeInLeft"
-            style={{ margin: '10px 20px 20px 20px' }}>
-            <Table
-              rowClassName={(record, index) => handlerRowBackground(record)}
-              dataSource={propList}
-              columns={defaultColumns}
-              sticky={true}
-              pagination={false}
-              scroll={{ y: '50vh' }}
-              bordered={false}
-              size={'small'}
-              style={{ boxShadow: '0px 0px 10px 0px rgb(34 34 34 / 15%)', fontSize: "5px" }}
-            />
+            style={{ display: 'flex', flexDirection: 'row', width: '100%', justifyContent: 'end', paddingRight: '20px' }}
+          >
+            <div>
+              <ExportButton />
+              <ConfirmModal
+                buttonText="Delete Project"
+                buttonType="primary"
+                buttonDanger={true}
+                modalTitle="Delete current project"
+                modalText="Confirm to delete current project"
+                confirmAction={handleDeleteProject}
+              />
+            </div>
           </div>
           : <></>}
-      </Form>
 
-      <div style={{ display: 'flex', flexDirection: 'row', width: '100%', justifyContent: 'space-between', padding: '20px', paddingBottom: '0px' }}>
-        <Form name="payloadAnalyzed" onFinish={startExamination} style={{ width: '80%' }}>
-          <div style={{ width: '100%' }}>
-            <Collapse
-              className="collapse-wrapper"
-              defaultActiveKey={['1']}
-              style={{ backgroundColor: 'rgb(16,16,16,0.85)', border: 'none', borderBottom: '20px', borderRadius: '10px', boxShadow: '0px 0px 10px 0px rgb(34 34 34 / 15%)' }}
-            >
-              <Panel
-                header="Payload to be checked"
-                key="1"
-                style={{ border: 'none' }}
-              >
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'left', padding: '15px', paddingTop: '0' }}>
-                  <span>
-                    Enter the payload to be checked below, all payload fields will be detailed.
-                  </span>
-                </div>
-                <Form.Item name="payloadInput">
-                  <TextArea
-                    placeholder="Paste a valid payload to be checked."
-                    style={{
-                      resize: 'none',
-                      border: 'none',
-                      maxHeight: '200px',
-                      minHeight: '200px',
-                      overflowY: "scroll",
-                      borderRadius: '5px',
-                      boxShadow: '0px 0px 10px 0px rgb(34 34 34 / 5%)'
-                    }}
-                  />
-                </Form.Item>
-                <Form.Item style={{ marginBottom: '5px' }}>
-                  <Button
-                    style={{ width: '100%', height: '50px', boxShadow: '0px 0px 10px 0px rgb(34 34 34 / 20%)' }}
-                    type="primary"
-                    htmlType="submit"
-                  >
-                    <strong>Check Payload</strong>
-                  </Button>
-                </Form.Item>
-              </Panel>
-            </Collapse>
-
-          </div>
+        <Form form={formPayloadAnalyzed} onFinish={saveRowChanges}>
+          {propList.length ?
+            <div
+              className="animate__animated animate__fadeInLeft"
+              style={{ margin: '10px 20px 20px 20px' }}>
+              <Table
+                rowClassName={(record, index) => handlerRowBackground(record)}
+                dataSource={propList}
+                columns={defaultColumns}
+                sticky={true}
+                pagination={false}
+                scroll={{ y: '50vh' }}
+                bordered={false}
+                size={'small'}
+                style={{ boxShadow: '0px 0px 10px 0px rgb(34 34 34 / 15%)', fontSize: "5px" }}
+              />
+            </div>
+            : <></>}
         </Form>
-        <div style={{ width: '100%' }}>
+
+        <div style={{ display: 'flex', flexDirection: 'row', width: '100%', justifyContent: 'space-between', padding: '20px', paddingBottom: '0px' }}>
+          <Form name="payloadAnalyzed" onFinish={startExamination} style={{ width: '80%' }}>
+            <div style={{ width: '100%' }}>
+              <Collapse
+                className="collapse-wrapper"
+                defaultActiveKey={['1']}
+                style={{ backgroundColor: 'rgb(16,16,16,0.85)', border: 'none', borderBottom: '20px', borderRadius: '10px', boxShadow: '0px 0px 10px 0px rgb(34 34 34 / 15%)' }}
+              >
+                <Panel
+                  header="Payload to be checked"
+                  key="1"
+                  style={{ border: 'none' }}
+                >
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'left', padding: '15px', paddingTop: '0' }}>
+                    <span>
+                      Enter the payload to be checked below, all payload fields will be detailed.
+                    </span>
+                  </div>
+                  <Form.Item name="payloadInput">
+                    <TextArea
+                      placeholder="Paste a valid payload to be checked."
+                      style={{
+                        resize: 'none',
+                        border: 'none',
+                        maxHeight: '200px',
+                        minHeight: '200px',
+                        overflowY: "scroll",
+                        borderRadius: '5px',
+                        boxShadow: '0px 0px 10px 0px rgb(34 34 34 / 5%)'
+                      }}
+                    />
+                  </Form.Item>
+                  <Form.Item style={{ marginBottom: '5px' }}>
+                    <Button
+                      style={{ width: '100%', height: '50px', boxShadow: '0px 0px 10px 0px rgb(34 34 34 / 20%)' }}
+                      type="primary"
+                      htmlType="submit"
+                    >
+                      <strong>Check Payload</strong>
+                    </Button>
+                  </Form.Item>
+                </Panel>
+              </Collapse>
+
+            </div>
+          </Form>
+          <div style={{ width: '100%' }}>
+          </div>
         </div>
-      </div>
+      </SessionContext.Provider>
     </>
   )
 }

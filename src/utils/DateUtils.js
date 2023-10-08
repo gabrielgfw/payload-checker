@@ -7,7 +7,7 @@ export class DateUtils {
 
   __handleLocation() {
     const DEFAULT = "pt-BR";
-    const userLocation = window.clientInformation?.language;
+    const userLocation = window.navigator?.language;
     return userLocation ?? DEFAULT;
   }
 
